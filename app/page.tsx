@@ -1,11 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { DashboardContent } from "@/components/dashboard-content"
+import { redirect } from "next/navigation"
 
-export default function DashboardPage() {
-  return (
-    <div className="flex h-screen">
-      <AppSidebar />
-      <DashboardContent />
-    </div>
-  )
+export default function HomePage() {
+  redirect("/onboarding")
 }
