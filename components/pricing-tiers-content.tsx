@@ -1,56 +1,12 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Plus, ExternalLink, Copy, Trash2, BarChart3, Save } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const tiers = [
-  {
-    name: "Deox Tier 1",
-    description: "Basic access with core features",
-    price: 29,
-    status: "Current",
-    statusColor: "bg-emerald-500",
-    subscribers: 156,
-    mrr: "$4.5K",
-    conversion: "12.3%",
-    conversionColor: "text-blue-600",
-    churn: "3.2%",
-    churnColor: "text-red-600",
-    launched: "Jun 18",
-  },
-  {
-    name: "Deox Tier 2",
-    description: "Enhanced features with analytics",
-    price: 59,
-    status: "Rolled out",
-    statusColor: "bg-blue-500",
-    subscribers: 89,
-    mrr: "$5.2K",
-    conversion: "8.7%",
-    conversionColor: "text-blue-600",
-    churn: "2.1%",
-    churnColor: "text-red-600",
-    launched: "Aug 2",
-  },
-  {
-    name: "Deox Tier 3",
-    description: "Premium with AI recommendations",
-    price: 99,
-    status: "Beta",
-    statusColor: "bg-purple-500",
-    subscribers: 34,
-    mrr: "$3.4K",
-    conversion: "5.2%",
-    conversionColor: "text-blue-600",
-    churn: "1.8%",
-    churnColor: "text-red-600",
-    launched: "2 weeks ago",
-    rollout: true,
-  },
-]
+import { getPricingStructure, type PricingStructurePlan, addTier } from "@/lib/api"
 
 const suggestions = [
   {
@@ -88,6 +44,23 @@ const suggestions = [
 ]
 
 export function PricingTiersContent() {
+  const [plans, setPlans] = useState<PricingStructurePlan[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // TODO: replace with real user id from auth context
+        const data = await getPricingStructure('user_mock')
+        setPlans(data)
+      } catch (e) {
+        setError('Failed to load pricing structure')
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
   return (
     <div className="flex-1 overflow-auto">
       {/* Header */}
@@ -117,51 +90,30 @@ export function PricingTiersContent() {
       {/* Main Content */}
       <main className="p-8">
         {/* Pricing Tiers Grid */}
+        {loading && <div className="text-sm text-muted-foreground">Loading pricing structure...</div>}
+        {error && <div className="text-sm text-red-600 mb-4">{error}</div>}
+        {!loading && !error && (
         <div className="grid gap-6 md:grid-cols-3 mb-8">
-          {tiers.map((tier, index) => (
+          {(plans?.[0]?.tiers ?? []).map((tier, index) => (
             <Card key={index}>
               <CardHeader>
                 <div className="flex items-start justify-between mb-2">
-                  <CardTitle className="text-lg">{tier.name}</CardTitle>
-                  <Badge variant="secondary" className={`${tier.statusColor} text-white border-0`}>
-                    {tier.status}
+                  <CardTitle className="text-lg">{tier.tier_name}</CardTitle>
+                  <Badge variant="secondary" className={`bg-emerald-500 text-white border-0`}>
+                    Active
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">{tier.description}</p>
+                <p className="text-sm text-muted-foreground">{tier.tier_description}</p>
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">${tier.price}</span>
+                    <span className="text-3xl font-bold">${tier.base_price}</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <div className="text-2xl font-bold">{tier.subscribers}</div>
-                    <div className="text-xs text-muted-foreground">Subscribers</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{tier.mrr}</div>
-                    <div className="text-xs text-muted-foreground">MRR</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <div className={`text-lg font-semibold ${tier.conversionColor}`}>{tier.conversion}</div>
-                    <div className="text-xs text-muted-foreground">Conversion</div>
-                  </div>
-                  <div>
-                    <div className={`text-lg font-semibold ${tier.churnColor}`}>{tier.churn}</div>
-                    <div className="text-xs text-muted-foreground">Churn</div>
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground mb-4">
-                  {tier.rollout ? `Rollout: ${tier.launched}` : `Launched: ${tier.launched}`}
-                </div>
+                <div className="text-xs text-muted-foreground mb-4">Billing: {tier.billing_period}</div>
 
                 <div className="flex items-center gap-2">
                   <Button className="flex-1">View Details</Button>
@@ -186,10 +138,27 @@ export function PricingTiersContent() {
                 <Plus className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="font-semibold mb-2">Add New Tier</h3>
-              <p className="text-sm text-muted-foreground text-center">Create a new pricing tier for your customers</p>
+              <p className="text-sm text-muted-foreground text-center mb-4">Create a new pricing tier for your customers</p>
+              <Button
+                onClick={async () => {
+                  if (!plans?.[0]) return
+                  await addTier({ plan_id: plans[0].plan_id, tier_name: 'New Tier', base_price: 49, billing_period: 'monthly', tier_description: 'New tier description' })
+                  // Optimistic refresh
+                  setLoading(true)
+                  try {
+                    const data = await getPricingStructure('user_mock')
+                    setPlans(data)
+                  } finally {
+                    setLoading(false)
+                  }
+                }}
+              >
+                Quick Add Tier
+              </Button>
             </CardContent>
           </Card>
         </div>
+        )}
 
         {/* AI Suggestions */}
         <div>

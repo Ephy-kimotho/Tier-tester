@@ -6,8 +6,8 @@ import { LayoutDashboard, Layers, Lightbulb, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+export const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Pricing tiers", href: "/pricing-tiers", icon: Layers },
   { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
   { name: "Settings", href: "/settings", icon: Settings },

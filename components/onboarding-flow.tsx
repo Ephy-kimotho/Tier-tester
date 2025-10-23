@@ -77,8 +77,8 @@ export function OnboardingFlow() {
   };
 
   const handleConfirm = () => {
-    // TODO: Send Tier data to the backend
-    console.log("Submitting data:", { dataType, inputMethod, tierData });
+    // TODO: Send Tier data to the backend via service layer
+    // Will be implemented when backend is connected
 
     // Redirect to dashboard after confirmation
     router.push("/pricing-tiers");

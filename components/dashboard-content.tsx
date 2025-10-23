@@ -1,20 +1,13 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Bell, TrendingUp, DollarSign, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-
-const revenueData = [
-  { month: "Jan", value: 35 },
-  { month: "Feb", value: 39 },
-  { month: "Mar", value: 42 },
-  { month: "Apr", value: 45 },
-  { month: "May", value: 44 },
-  { month: "Jun", value: 48 },
-]
+import { getDashboardSummary, type DashboardSummary } from "@/lib/api"
 
 const recommendations = [
   {
@@ -61,6 +54,28 @@ const recommendations = [
 ]
 
 export function DashboardContent() {
+  const [data, setData] = useState<DashboardSummary | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const d = await getDashboardSummary()
+        setData(d)
+      } catch (e) {
+        setError("Failed to load dashboard")
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
+
+  const revenueData = data?.revenueSeries ?? []
+  const mrr = data?.metrics.mrr ?? 0
+  const arr = data?.metrics.arr ?? 0
+  const activeUsers = data?.metrics.activeUsers ?? 0
+
   return (
     <div className="flex-1 overflow-auto">
       {/* Header */}
@@ -82,6 +97,10 @@ export function DashboardContent() {
 
       {/* Main Content */}
       <main className="p-8">
+        {loading && <div className="text-sm text-muted-foreground">Loading dashboard...</div>}
+        {error && <div className="text-sm text-red-600 mb-4">{error}</div>}
+        {!loading && !error && (
+        <>
         {/* Metrics Cards */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
@@ -92,7 +111,7 @@ export function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">$47,290</div>
+              <div className="text-3xl font-bold">${mrr.toLocaleString()}</div>
               <p className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
                 +12.3% vs last month
@@ -108,7 +127,7 @@ export function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">$567,480</div>
+              <div className="text-3xl font-bold">${arr.toLocaleString()}</div>
               <p className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
                 +18.7% vs last year
@@ -124,7 +143,7 @@ export function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">2,847</div>
+              <div className="text-3xl font-bold">{activeUsers.toLocaleString()}</div>
               <p className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
                 +8.1% vs last month
@@ -209,6 +228,8 @@ export function DashboardContent() {
             ))}
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   )
