@@ -97,7 +97,7 @@ export function RecommendationsContent() {
 
       {/* Main Content */}
       <main className="p-8">
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Recommendations */}
           <div className="flex-1">
             {/* Diagnostic Summary */}
@@ -205,7 +205,7 @@ export function RecommendationsContent() {
           </div>
 
           {/* Right Sidebar - Action Plan */}
-          <div className="w-[300px]">
+          <div className="w-full lg:w-[300px]">
             <Card>
               <CardHeader>
                 <CardTitle>Overall Action Plan</CardTitle>

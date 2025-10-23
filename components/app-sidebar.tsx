@@ -17,7 +17,7 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="flex h-screen w-[200px] flex-col border-r bg-white">
+    <div className="hidden md:flex h-screen w-[200px] flex-col border-r bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b px-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
