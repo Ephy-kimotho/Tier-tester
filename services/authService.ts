@@ -37,6 +37,7 @@ export interface AuthResponse {
   message?: string
   token?: string
   user?: User
+  user_id?: string
 }
 
 // ============================================================================
@@ -74,7 +75,7 @@ export async function registerUser(data: RegisterRequest): Promise<AuthResponse>
 
   // Mock implementation
   await new Promise(resolve => setTimeout(resolve, 500))
-  
+
   if (!data.email || !data.password || !data.company_name) {
     return {
       success: false,
@@ -105,7 +106,7 @@ export async function loginUser(data: LoginRequest): Promise<AuthResponse> {
 
   // Mock implementation
   await new Promise(resolve => setTimeout(resolve, 400))
-  
+
   if (!data.email || !data.password) {
     return {
       success: false,
@@ -135,7 +136,7 @@ export async function getUserDetails(userId: string): Promise<{ success: boolean
 
   // Mock implementation
   await new Promise(resolve => setTimeout(resolve, 300))
-  
+
   if (!userId) {
     return {
       success: false,
@@ -156,7 +157,7 @@ export async function logoutUser(): Promise<{ success: boolean }> {
   // TODO: If backend supports logout endpoint, call it here
   // For now, just clear client-side state
   await new Promise(resolve => setTimeout(resolve, 200))
-  
+
   return {
     success: true,
   }
